@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../../core/constants/app_constants.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
@@ -29,7 +29,7 @@ class AuthRepository {
     required String phoneNumber,
     required String password,
   }) async {
-    final email = '${phoneNumber}@sentinel.app';
+    final email = '$phoneNumber@sentinel.app';
 
     final credential = await auth.createUserWithEmailAndPassword(
       email: email,
@@ -63,7 +63,7 @@ class AuthRepository {
     }
 
     // Sign in with email/password
-    final email = '${phoneNumber}@sentinel.app';
+    final email = '$phoneNumber@sentinel.app';
     await auth.signInWithEmailAndPassword(email: email, password: password);
     return true;
   }

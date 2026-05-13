@@ -6,9 +6,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/otp_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
-import '../../features/sos/presentation/screens/sos_history_screen.dart';
-import '../../features/incident/presentation/screens/report_incident_screen.dart';
-import '../../features/incident/presentation/screens/incident_list_screen.dart';
+import '../../features/incidents/presentation/screens/report_incident_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -16,7 +14,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/login',
     redirect: (context, state) {
-      final isLoggedIn = authState.valueOrNull != null;
+      final isLoggedIn = authState.value != null;
       final isAuthRoute = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/otp';
@@ -50,16 +48,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
-        path: '/sos-history',
-        builder: (context, state) => const SosHistoryScreen(),
-      ),
-      GoRoute(
-        path: '/report-incident',
+        path: '/report',
         builder: (context, state) => const ReportIncidentScreen(),
-      ),
-      GoRoute(
-        path: '/incidents',
-        builder: (context, state) => const IncidentListScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

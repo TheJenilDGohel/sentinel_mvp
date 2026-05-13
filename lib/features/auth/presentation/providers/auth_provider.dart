@@ -9,7 +9,7 @@ final authStateProvider = StreamProvider<User?>((ref) {
 
 /// Current user provider
 final currentUserProvider = Provider<User?>((ref) {
-  return ref.watch(authStateProvider).valueOrNull;
+  return ref.watch(authStateProvider).value;
 });
 
 /// Auth action states
@@ -43,10 +43,11 @@ class AuthState {
   }
 }
 
-class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthRepository _repository;
-
-  AuthNotifier(this._repository) : super(const AuthState());
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() {
+    return const AuthState();
+  }
 
   /// Register new user
   Future<bool> register({
@@ -55,7 +56,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
-      await _repository.register(
+      await ref.read(authRepositoryProvider).register(
         phoneNumber: phoneNumber,
         password: password,
       );
@@ -65,7 +66,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         password: password,
       );
       // Sign out after registration so user goes through OTP flow
-      await _repository.signOut();
+      await ref.read(authRepositoryProvider).signOut();
       return true;
     } on FirebaseAuthException catch (e) {
       String message;
@@ -103,7 +104,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
-      final exists = await _repository.initiateLogin(
+      final exists = await ref.read(authRepositoryProvider).initiateLogin(
         phoneNumber: phoneNumber,
       );
       if (!exists) {
@@ -132,7 +133,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> verifyOtp(String otp) async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
-      final success = await _repository.verifyOtp(
+      final success = await ref.read(authRepositoryProvider).verifyOtp(
         phoneNumber: state.phoneNumber!,
         otp: otp,
         password: state.password!,
@@ -157,7 +158,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Sign out
   Future<void> signOut() async {
-    await _repository.signOut();
+    await ref.read(authRepositoryProvider).signOut();
     state = const AuthState();
   }
 
@@ -167,7 +168,4 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-final authNotifierProvider =
-    StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(ref.watch(authRepositoryProvider));
-});
+final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);

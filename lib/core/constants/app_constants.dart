@@ -8,6 +8,8 @@ class AppConstants {
   static const String usersCollection = 'users';
   static const String sosEventsCollection = 'sos_events';
   static const String incidentsCollection = 'incidents';
+  static const String incidentReportsCollection = 'incident_reports';
+  static const String incidentImagesPath = 'incident_images';
 
   /// Incident types
   static const List<String> incidentTypes = [

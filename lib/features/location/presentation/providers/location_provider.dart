@@ -23,22 +23,23 @@ class LocationState {
   }
 }
 
-class LocationNotifier extends StateNotifier<LocationState> {
-  final LocationRepository _repository;
-
-  LocationNotifier(this._repository) : super(const LocationState());
+class LocationNotifier extends Notifier<LocationState> {
+  @override
+  LocationState build() {
+    return const LocationState();
+  }
 
   Future<Position?> fetchCurrentLocation() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final position = await _repository.getCurrentPosition();
+      final position = await ref.read(locationRepositoryProvider).getCurrentPosition();
       state = LocationState(position: position, isLoading: false);
       return position;
     } on LocationException catch (e) {
       state = LocationState(isLoading: false, error: e.message);
       return null;
     } catch (e) {
-      state = LocationState(
+      state = const LocationState(
         isLoading: false,
         error: 'Failed to get location. Please try again.',
       );
@@ -57,7 +58,4 @@ class LocationNotifier extends StateNotifier<LocationState> {
   }
 }
 
-final locationNotifierProvider =
-    StateNotifierProvider<LocationNotifier, LocationState>((ref) {
-  return LocationNotifier(ref.watch(locationRepositoryProvider));
-});
+final locationNotifierProvider = NotifierProvider<LocationNotifier, LocationState>(LocationNotifier.new);

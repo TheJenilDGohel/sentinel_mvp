@@ -31,16 +31,15 @@ class SosState {
   }
 }
 
-class SosNotifier extends StateNotifier<SosState> {
-  final SosRepository _repository;
-  final String? _userId;
-  final LocationNotifier _locationNotifier;
-
-  SosNotifier(this._repository, this._userId, this._locationNotifier)
-      : super(const SosState());
+class SosNotifier extends Notifier<SosState> {
+  @override
+  SosState build() {
+    return const SosState();
+  }
 
   Future<SosEvent?> triggerSos() async {
-    if (_userId == null) {
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
       state = state.copyWith(
         status: SosTriggerStatus.error,
         errorMessage: 'User not authenticated',
@@ -51,11 +50,14 @@ class SosNotifier extends StateNotifier<SosState> {
     state = state.copyWith(status: SosTriggerStatus.loading);
 
     try {
+      final repository = ref.read(sosRepositoryProvider);
+      final locationNotifier = ref.read(locationNotifierProvider.notifier);
+      
       // Try to get location (non-blocking — SOS works even without GPS)
-      final position = await _locationNotifier.fetchCurrentLocation();
+      final position = await locationNotifier.fetchCurrentLocation();
 
-      final event = await _repository.triggerSos(
-        userId: _userId,
+      final event = await repository.triggerSos(
+        userId: user.uid,
         latitude: position?.latitude,
         longitude: position?.longitude,
       );
@@ -80,12 +82,7 @@ class SosNotifier extends StateNotifier<SosState> {
 }
 
 final sosNotifierProvider =
-    StateNotifierProvider<SosNotifier, SosState>((ref) {
-  final repository = ref.watch(sosRepositoryProvider);
-  final user = ref.watch(currentUserProvider);
-  final locationNotifier = ref.watch(locationNotifierProvider.notifier);
-  return SosNotifier(repository, user?.uid, locationNotifier);
-});
+    NotifierProvider<SosNotifier, SosState>(SosNotifier.new);
 
 /// Stream of SOS history
 final sosHistoryProvider = StreamProvider<List<SosEvent>>((ref) {

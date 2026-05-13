@@ -20,20 +20,19 @@ class IncidentState {
   });
 }
 
-class IncidentNotifier extends StateNotifier<IncidentState> {
-  final IncidentRepository _repository;
-  final String? _userId;
-  final LocationNotifier _locationNotifier;
-
-  IncidentNotifier(this._repository, this._userId, this._locationNotifier)
-      : super(const IncidentState());
+class IncidentNotifier extends Notifier<IncidentState> {
+  @override
+  IncidentState build() {
+    return const IncidentState();
+  }
 
   Future<IncidentReport?> submitReport({
     required String incidentType,
     required String description,
     File? imageFile,
   }) async {
-    if (_userId == null) {
+    final userId = ref.read(currentUserProvider)?.uid;
+    if (userId == null) {
       state = const IncidentState(
         status: IncidentStatus.error,
         errorMessage: 'User not authenticated',
@@ -45,10 +44,10 @@ class IncidentNotifier extends StateNotifier<IncidentState> {
 
     try {
       // Auto-capture location
-      final position = await _locationNotifier.fetchCurrentLocation();
+      final position = await ref.read(locationNotifierProvider.notifier).fetchCurrentLocation();
 
-      final report = await _repository.submitReport(
-        userId: _userId,
+      final report = await ref.read(incidentRepositoryProvider).submitReport(
+        userId: userId,
         incidentType: incidentType,
         description: description,
         imageFile: imageFile,
@@ -62,7 +61,7 @@ class IncidentNotifier extends StateNotifier<IncidentState> {
       );
       return report;
     } catch (e) {
-      state = IncidentState(
+      state = const IncidentState(
         status: IncidentStatus.error,
         errorMessage: 'Failed to submit report. Please try again.',
       );
@@ -75,13 +74,7 @@ class IncidentNotifier extends StateNotifier<IncidentState> {
   }
 }
 
-final incidentNotifierProvider =
-    StateNotifierProvider<IncidentNotifier, IncidentState>((ref) {
-  final repository = ref.watch(incidentRepositoryProvider);
-  final user = ref.watch(currentUserProvider);
-  final locationNotifier = ref.watch(locationNotifierProvider.notifier);
-  return IncidentNotifier(repository, user?.uid, locationNotifier);
-});
+final incidentNotifierProvider = NotifierProvider<IncidentNotifier, IncidentState>(IncidentNotifier.new);
 
 /// Stream of incident history
 final incidentHistoryProvider = StreamProvider<List<IncidentReport>>((ref) {
