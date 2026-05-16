@@ -28,6 +28,7 @@ android/app/google-services.json
 lib/firebase_options.dart
 ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
+users.json
 
 # Flutter/Dart/Pub related
 **/doc/api/

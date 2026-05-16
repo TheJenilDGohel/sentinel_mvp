@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/auth_repository.dart';
 
@@ -69,6 +70,7 @@ class AuthNotifier extends Notifier<AuthState> {
       await ref.read(authRepositoryProvider).signOut();
       return true;
     } on FirebaseAuthException catch (e) {
+      debugPrint('FirebaseAuthException during register: ${e.code} - ${e.message}');
       String message;
       switch (e.code) {
         case 'email-already-in-use':
@@ -89,9 +91,10 @@ class AuthNotifier extends Notifier<AuthState> {
       );
       return false;
     } catch (e) {
+      debugPrint('Generic Exception during register: $e');
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: 'Something went wrong. Please try again',
+        errorMessage: 'Register Error: $e',
       );
       return false;
     }
@@ -120,10 +123,18 @@ class AuthNotifier extends Notifier<AuthState> {
         password: password,
       );
       return true;
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
+      debugPrint('FirebaseAuthException during login: ${e.code} - ${e.message}');
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: 'Login failed. Please check your connection',
+        errorMessage: 'Login failed: ${e.message}',
+      );
+      return false;
+    } catch (e) {
+      debugPrint('Generic Exception during login: $e');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'Login Error: $e',
       );
       return false;
     }
@@ -166,6 +177,7 @@ class AuthNotifier extends Notifier<AuthState> {
   void resetState() {
     state = const AuthState();
   }
+
 }
 
 final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);

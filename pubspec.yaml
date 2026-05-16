@@ -1,5 +1,5 @@
 name: sentinel_mvp
-description: "A new Flutter project."
+description: "Sentinel MVP — A personal safety companion app with SOS alerts, GPS tracking, and incident reporting."
 publish_to: 'none'
 version: 0.1.0+1
 

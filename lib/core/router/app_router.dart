@@ -10,11 +10,12 @@ import '../../features/incidents/presentation/screens/report_incident_screen.dar
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final notifierState = ref.watch(authNotifierProvider);
 
   return GoRouter(
     initialLocation: '/login',
     redirect: (context, state) {
-      final isLoggedIn = authState.value != null;
+      final isLoggedIn = authState.value != null || notifierState.status == AuthStatus.success;
       final isAuthRoute = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/otp';
